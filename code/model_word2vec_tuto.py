@@ -11,8 +11,12 @@ from gensim.models import Word2Vec
 		- utiliser les sentences directement pour construire le model
 		- utiliser un corpus plus volumineux pour trained le model (voir gensim)
 		- load un model pré-existant
-			https://github.com/RaRe-Technologies/gensim-data
-			https://machinelearningmastery.com/develop-word-embeddings-python-gensim/
+			Google (3.4 GB) & GLove () models : https://machinelearningmastery.com/develop-word-embeddings-python-gensim/
+
+			utiliser api gensim : https://github.com/RaRe-Technologies/gensim-data
+			pre-trained model en français (2.24GB): https://github.com/Kyubyong/wordvectors
+
+			https://fasttext.cc/docs/en/crawl-vectors.html
 
 	=> ce sont des solutions coûteuses en mémoire
 

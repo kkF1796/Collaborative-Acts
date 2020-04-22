@@ -1,0 +1,5 @@
+WORD2VEC : word2vec model
+
+KNN: ball_tree, minkowski, n=10
+Accuray: 42.40837696335078
+Kappa Score:  0.24804379625926043

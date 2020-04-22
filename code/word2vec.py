@@ -1,15 +1,20 @@
 """-----------------------------------------------------------
-	SpaCy : 
-		Utterance classification with SpaCy
-		by comparing extracted tokens from sentences
+	Word2vec : 
+		Utterance classification based on 
+		word2vec model
 --------------------------------------------------------------"""
 
 import pandas as pd
 import numpy as np
 
+import gensim 
+from gensim.models import Word2Vec
+
 from preprocessing import *
 from vectorization_spaCy import *
 from data_utils import *
+
+import word2vec_model
 
 """
 NLP: class in .csv file
@@ -51,54 +56,29 @@ X_train,y_train,X_test,y_test = split_data(utterances,labels)
 """ Step 2: Preprocessing of data """
 utterances_train_ppng=[normalization(utterance) for utterance in X_train]
 tokens_train=[tokenization(utterance) for utterance in utterances_train_ppng]
-tokens_train=[ delete_stop_words(token) for token in tokens_train]
+#tokens_train=[ delete_stop_words(token) for token in tokens_train]
 #tokens=[ delete_punctuation(token) for token in tokens_train]
-tokens_train=[ lemmatization(token) for token in tokens_train]
+#tokens_train=[ lemmatization(token) for token in tokens_train]
 
 
 utterances_test_ppng=[normalization(utterance) for utterance in X_test]
 tokens_test=[tokenization(utterance) for utterance in utterances_test_ppng]
-tokens_test=[ delete_stop_words(token) for token in tokens_test]
+#tokens_test=[ delete_stop_words(token) for token in tokens_test]
 #tokens_test=[ delete_punctuation(token) for token in tokens_test]
-tokens_test=[ lemmatization(token) for token in tokens_test]
+#tokens_test=[ lemmatization(token) for token in tokens_test]
 
 
 """ Step 3: Vectorization of sentences """
-size_vec= 96 # actual size of a word vector
 
-vect_train=[ np.zeros(size_vec) for token in tokens_train]
-for i in range(len(tokens_train)):
-	if not len(tokens_train[i])==0:
-		#print(tokens_train[i])
-		vect_train[i]=np.array(vectorization2(tokens_train[i]))
+tokens_train=[from_token_to_text(token) for token in tokens_train]
+tokens_test=[from_token_to_text(token) for token in tokens_test]
 
+model=word2vec_model.word2vec()
+#model.build_model(dataFile)
+model.init_model('model.bin')
 
-vect_test=[ np.zeros(size_vec) for token in tokens_test]
-for i in range(len(tokens_test)):
-	if not len(tokens_test[i])==0:
-		#print(tokens_test[i])
-		vect_test[i]=np.array(vectorization2(tokens_test[i]))
-
-
-#vect_train=[ vectorization2(token) for token in tokens_train if not len(token)==0]  #### PB à REVOIR : attention à cette étape les [] sont retirés (enlève des sentences) 
-
-#vect_test=[ vectorization2(token) for token in tokens_test ]#if not len(token)==0]  #### PB à REVOIR : attention à cette étape les [] sont retirés (enlève des sentences) 
-
-"""
-i=0
-for token in tokens_test:
-	if(len(token)==0):
-		print(utterances[i])
-		print(token)
-		print(vectorization2(token,size_vec))
-	i+=1"""
-
-"""for k in range(len(utterances)):
-	print(utterances[k])
-	print(tokens_train[k])
-	if not len(tokens[k])==0:
-		print(vectorization2(tokens[k]))
-	print('')"""
+vect_train=[ model.vectorization(token) for token in tokens_train ]#if not len(token)==0]
+vect_test=[ model.vectorization(token) for token in tokens_test ]#if not len(token)==0]  
 
 
 """ Step 4: Classification """
