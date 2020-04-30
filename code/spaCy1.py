@@ -7,9 +7,14 @@
 import pandas as pd
 import numpy as np
 
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
 from preprocessing import *
 from vectorization_spaCy import *
 from data_utils import *
+
+import KNN_similarity
 
 """
 NLP: class in .csv file
@@ -69,31 +74,10 @@ judgements. This may happen if you're using one of the small models, e.g. `en_co
 with word vectors and only use context-sensitive tensors. You can always add your own word vectors, or use one
 of the larger models instead if available"""
 
-"""
-# Classification: Random Forest
-from sklearn.ensemble import RandomForestRegressor# Instantiate model with 1000 decision trees
-rf = RandomForestRegressor(n_estimators = 1000, random_state = 42)
-rf.fit(vect_train, y_train);
-y_test_pred = rf.predict(vect_test)
-print("\nRandom Forest:")
-print("Accuray:",accuracy(y_test,y_test_pred))
-print("Kappa Score: ",kappa_score(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int) ))
-# convert labels into categories before calculating Kappa score ???
-"""
+import warnings
+warnings.filterwarnings('always')
 
 """
-# Classification: Naive Bayes
-from sklearn.naive_bayes import GaussianNB
-nb = GaussianNB()
-nb.fit(vect_train, y_train);
-y_test_pred = nb.predict(vect_test)
-print("\nNaive Bayes:")
-print("Accuray:",accuracy(y_test,y_test_pred))
-print("Kappa Score: ",kappa_score(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int) ))
-# convert labels into categories before calculating Kappa score ???
-"""
-
-
 # Classification: KNN
 from sklearn.neighbors import KNeighborsClassifier
 knn = KNeighborsClassifier(n_neighbors=10, algorithm='ball_tree', metric='minkowski') # distance computed : euclidean, manhattan, chebyshev, minkowski, wminkowski, seuclidean, mahalanobis  / algorithm : ball_tree, kd_tree
@@ -104,30 +88,28 @@ print("Accuray:",accuracy(y_test,y_test_pred))
 print("Kappa Score: ",kappa_score(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int) ))
 # convert labels into categories before calculating Kappa score ???
 
+print('\nConfusion Matrix: ')
+print('\n',confusion_matrix(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int)) )
+print('\nClassification Report:')
+print('\n',classification_report(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int), target_names=["Interaction management", "Social relation", "Task management", "Information", "Transactivity", "Tool", "Other","Outside activity"]) )"""
 
-"""
-# Classification: K-Means clustering
-from sklearn.cluster import KMeans
-kmeans = KMeans(n_clusters=8, random_state=0) # distance computed : euclidean, manhattan, chebyshev, minkowski, wminkowski, seuclidean, mahalanobis
-kmeans.fit(vect_train);
-y_test_pred = kmeans.predict(vect_test) """
-"""print("\nK-Means clustering:")
+
+knn = KNN_similarity.knn()
+knn.train(vect_train, y_train)
+y_test_pred = knn.predict(vect_test, k=5)#, similarity ='spacy')
+print("\nKNN, SpaCy similarity:")
 print("Accuray:",accuracy(y_test,y_test_pred))
 print("Kappa Score: ",kappa_score(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int) ))
-# convert labels into categories before calculating Kappa score ???"""
+# convert labels into categories before calculating Kappa score ???
 
-"""
-# Classification: Agglomerative clustering
-from sklearn.cluster import AgglomerativeClustering
-agg = AgglomerativeClustering(n_clusters=8) 
-assign=agg.fit_predict(vect_train)
+#print('\nConfusion Matrix: ')
+#print('\n',confusion_matrix(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int)) )
+print('\nClassification Report:')
+print('\n',classification_report(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int), target_names=["Interaction management", "Social relation", "Task management", "Information", "Transactivity", "Tool", "Other","Outside activity"]) )
 
-clusters=[[x for x, t in zip (X_train, assign) if t == c] for c in range(8)]
 
-for k in clusters[5]:
-	print(k)
-	print(find_categ(k, utterances, categories))
-	print('\n')"""
+
+
 
 
 

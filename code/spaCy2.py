@@ -102,6 +102,9 @@ for token in tokens_test:
 
 
 """ Step 4: Classification """
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
 # it might be possible to use cosine similarity with kNN or clustering but it costs lot of memory
 
 # Classification: KNN
@@ -113,3 +116,11 @@ print("\nKNN:")
 print("Accuray:",accuracy(y_test,y_test_pred))
 print("Kappa Score: ",kappa_score(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int) ))
 # convert labels into categories before calculating Kappa score ???
+
+import warnings
+warnings.filterwarnings('always')
+
+print('\nConfusion Matrix: ')
+print('\n',confusion_matrix(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int)) )
+print('\nClassification Report:')
+print('\n',classification_report(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int), target_names=["Interaction management", "Social relation", "Task management", "Information", "Transactivity", "Tool", "Other","Outside activity"]) )

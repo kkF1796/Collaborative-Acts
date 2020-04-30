@@ -17,9 +17,9 @@ class word2vec(object):
 	def __init__(self):
 		pass
 
-	def init_model(self, model_file):
-        	self.model = Word2Vec.load('model.bin')
-		#self.model = Word2Vec.load(model_file)
+	def init_model(self, model_file='model.bin'):
+        	#self.model = Word2Vec.load('model.bin')
+		self.model = Word2Vec.load(model_file)
 
 	# build model or train pre-existing one
 	def build_model(self, dataFile):
@@ -48,12 +48,13 @@ class word2vec(object):
 	def vectorization(self, tokens):	
 		return 1/len(tokens)*sum([(self.model).wv[token] for token in tokens])
 
+	def most_similar(sentence):
+		return self.model.wv.most_similar(sentence)
 
-# obtenir les mots les plus similaires à un mot donné
-#similar=model.wv.most_similar('sentence')
 
-# similarité entre deux mots
-#print('\n similarity:',new_model.similarity('yet', 'one'))
+	def similarity(word1, word2):
+		return self.model.similarity(word1, word2)
+
 
 
 
