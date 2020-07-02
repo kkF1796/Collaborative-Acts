@@ -7,9 +7,17 @@
 import pandas as pd
 import numpy as np
 
+import warnings
+warnings.filterwarnings('always')
+
 from preprocessing import *
 from vectorization_spaCy import *
 from data_utils import *
+
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
+from sklearn.neighbors import KNeighborsClassifier
 
 """
 NLP: class in .csv file
@@ -25,8 +33,10 @@ NLP: class in .csv file
 	9. Categories
 """
 
+# SCRIPT A REVOIR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 """ Step 1: Extract data from file """
-dataFile='~/Bureau/TravailPerso/collaborativeActs.csv'
+dataFile='./collaborativeActs.csv'
 
 df = pd.read_csv(dataFile,delimiter="\t",header=None,error_bad_lines=False, encoding="utf8")
 
@@ -102,13 +112,6 @@ for token in tokens_test:
 
 
 """ Step 4: Classification """
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-
-# it might be possible to use cosine similarity with kNN or clustering but it costs lot of memory
-
-# Classification: KNN
-from sklearn.neighbors import KNeighborsClassifier
 knn = KNeighborsClassifier(n_neighbors=10, algorithm='ball_tree', metric='minkowski') # distance computed : euclidean, manhattan, chebyshev, minkowski, wminkowski, seuclidean, mahalanobis  / algorithm : ball_tree, kd_tree
 knn.fit(vect_train, y_train);
 y_test_pred = knn.predict(vect_test)
@@ -117,8 +120,6 @@ print("Accuray:",accuracy(y_test,y_test_pred))
 print("Kappa Score: ",kappa_score(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int) ))
 # convert labels into categories before calculating Kappa score ???
 
-import warnings
-warnings.filterwarnings('always')
 
 print('\nConfusion Matrix: ')
 print('\n',confusion_matrix(np.array(y_test, dtype=int), np.array(y_test_pred,dtype=int)) )
