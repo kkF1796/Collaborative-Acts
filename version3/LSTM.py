@@ -1,31 +1,32 @@
-"""------------------------------------------------------------------------------------
-	SpaCy : 
-		Utterance classification in 
-		collaborative acts with SpaCy
-
-	python3 spaCy.py preprocess [algo_classif] [n_test]
-
-	preprocess: Type of preprocessing
-		0: Complete utterance
-		1: Stop words
-		2: Stop words + lemmatization
-		3: Lemmatization
-
-	algo_classif: chosen algorithm for classification (see classification.py)
-	n_test : number of dyades for testing 
-----------------------------------------------------------------------------------------"""
 import sys
 import pickle
 
 import pandas as pd
 import numpy as np
 
-#from preprocessing import *
+from preprocessing import *
 from vectorization_spaCy import *
 from data_utils import *
 
 from model_tools import *
-from classification import *
+
+
+import os
+os.environ["CUDA_DEVICES_ORDER"] = "PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = '-1'
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+import tensorflow as tf
+from tensorflow import keras
+
+from keras.datasets import imdb
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import Dropout
+from keras.layers import LSTM
+from keras.layers.embeddings import Embedding
+from keras.preprocessing import sequence
+from keras.utils import to_categorical
 
 
 """ Step 0: Get arguments on command line """
@@ -37,11 +38,7 @@ if len(sys.argv) > 1:
 	preprocess = int(sys.argv[1])
 
 if len(sys.argv) > 2: 
-	algo_classif= int(sys.argv[2])
-
-if len(sys.argv) > 3: 
-	n_test= int(sys.argv[3])
-
+	n_test= int(sys.argv[2])
 
 print('Type of preprocessing: ', preprocess)
 print('Chosen algorithm for classification: ', algo_classif)
@@ -113,6 +110,9 @@ X = add_feature_time(X, duration, dyads_index)
 
 """ Step 5: Classification """
 print('Classification')
+class_weights = class_weights(y, dyads_index)
+#print(class_weights.shape)
+
 #n_rand = 12
 #fold = np.random.choice(range(len(dyads_index)), n_rand)
 
@@ -120,6 +120,7 @@ folds = np.asarray(range(len(dyads_index)) ,dtype=np.int32)
 
 kappa_score_hist =[]
 acc_hist = []
+#n_test = 5
 for n_fold in range(folds.shape[0]-n_test):
 
 	fold_test = np.asarray(range(n_test),dtype=np.int32)+n_fold	
@@ -130,23 +131,62 @@ for n_fold in range(folds.shape[0]-n_test):
 
 	print('\nTRAIN: ', fold_train, X_train.shape[0] ,' TEST:', fold_test,  X_test.shape[0])
 
-	model1 = classification(algo_classif, int(np.sqrt(abs(X_train.shape[0]))/3))
+	weights = compute_weights(class_weights, fold_train,0.25)
+	print('Weights: ',weights)
 
-	#train model 1 
-	model1.fit(X_train, y_train)
+	" Prepare standardized data for LSTM"
+	n_steps = 1
+	n_features = X_train.shape[1]
+	X_train = np.reshape(X_train, (X_train.shape[0], n_steps, X_train.shape[1]))
+	X_test = np.reshape(X_test, (X_test.shape[0], n_steps, X_test.shape[1]))	
+	print(X_train.shape, X_test.shape)
+	#print(X_train.shape[2])
 
-	#test model 1 
-	y_pred_1 = model1.predict(X_test)
-	
-	accuracy_1, kappa_score_1 = cross_validation_scores(y_test, y_pred_1, collab_acts)
+	y_train = to_categorical(y_train)
+	y_test_categ = to_categorical(y_test)
+	#print('\n',y_train)
 
-	kappa_score_hist.append(kappa_score_1)
-	acc_hist.append(accuracy_1)
-	
-		
+	hidden_nodes = 24 #64 #240
+	" Build and Train LSTM " "A REVOIR POUR LOAD ou GET MODEL"
+	with tf.device('/gpu:0'):
+		model = Sequential()
+		model.add(LSTM(hidden_nodes,return_sequences=True,input_shape=(n_steps, n_features), name='Layer1')) #return_sequences=True
+		model.add(Dropout(0.2))
+		model.add(LSTM(hidden_nodes, name='Layer2'))
+		model.add(Dropout(0.2))
+		model.add(Dense(8, activation='softmax', name='Dense1'))
+
+		#model.build() 
+
+		model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+		#print(model.summary())
+		model.fit(X_train, y_train, epochs=12, batch_size=64, verbose=0 ,shuffle=False, class_weight=weights)
+
+	# Final evaluation of the model
+	scores = model.evaluate(X_test, y_test_categ, verbose=0)
+	print("Accuracy: %.2f%%" % (scores[1]*100))
+
+	" Compute scores "
+	y_pred = model.predict_classes(X_test)
+
+	accuracy, kappa_score = cross_validation_scores(y_test, y_pred, collab_acts)
+
+	kappa_score_hist.append(kappa_score)
+	acc_hist.append(accuracy)
+
+print(acc_hist)
+print(kappa_score_hist)
+
 # plot graphe
+print('\nMean Kappa Score: ', np.mean(kappa_score_hist))
+
 accuracy_hist(acc_hist)
 kappa_score_hist(kappa_score_hist)
+
+
+
+
+
 
 
 

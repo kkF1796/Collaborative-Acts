@@ -5,6 +5,8 @@ spacy.prefer_gpu()
 
 nlp = spacy.load("fr_core_news_sm")
 
+from spellchecker import SpellChecker
+
 
 text = 'Ceci est un travail intéressant.'
 doc = nlp(text)
@@ -29,4 +31,10 @@ print(lemma)
 punct = [token for token in tokens if not token.is_punct]
 print(punct)
 
-print(doc.vector)
+#print(doc.vector)
+
+sentiment = [token.sentiment for token in tokens]
+print(sentiment)
+
+
+

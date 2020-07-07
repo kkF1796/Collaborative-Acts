@@ -22,8 +22,9 @@ NLP: functions for preprocessing data
 import string 
 
 def spell_correction(utterance, punctuation=0):
-	tokens = tokenization(utterance)
-	tokens_text=from_token_to_text(tokens)
+	#tokens = tokenization(utterance)
+	#tokens_text=from_token_to_text(tokens)
+	tokens_text = utterance.split(" ")
 	if punctuation:
 		tokens_text = [token for token in tokens_text if (not token in string.punctuation or token=='?' or token=='!') ] #'(' ')'
 
@@ -32,20 +33,36 @@ def spell_correction(utterance, punctuation=0):
 		if word in tokens_text:
 			index = tokens_text.index(word)
 			tokens_text[index] = spell.correction(word)
+
 	spell_correct = " ".join(tokens_text) 
 	return spell_correct
+
+
+def custom_stopwords(utterance):
+	custom_list = ["'fin", "s'cours","'scuse","'traument","'ttend","'être", 'alors',"c'est",'de','donc','la','le', 'les','une', 'un','voilà', 'ah','bah',"c'estse","c'ets","c'qu'on","c'qui","c'que","c't'idée","c'tait","c'te", 'ce','ceci','cela','celle', 'celui','ces','cet','cette','ci',"d'acc","d'accus","d'ins","d'jà", "d'la","d'le","d'leur","d'nos",'de','des','du','en','que','quel','quels', 'quelles', 'quelle', 'zyva']
+	custom_list.append(['eh','euh','hein','hm','oh', 'tac'])#'ouf','oups','pff' ])
+	tokens = utterance.split(" ")
+	tokens= [token for token in tokens if not token in custom_list]
+	return (" ").join(tokens)
 
 
 def preprocessing(utterances, preprocess,spell=0, punctuation=0):
 	utterance_data_set=[]
 	lemma=0
+	i = 0
 	for utterance in utterances:
+		#print(i)
+		#i+=1
+
 		tokens=normalization(utterance)
 
 		if spell:
 			tokens=spell_correction(tokens, punctuation)
 
 		if preprocess:
+			# custom stopwords
+			#tokens = custom_stopwords(tokens)		
+
 			tokens=tokenization(tokens)
 			#tokens=delete_punctuation(token)
 

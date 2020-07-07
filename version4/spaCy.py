@@ -3,7 +3,7 @@
 		Utterance classification in 
 		collaborative acts with SpaCy
 
-	python3 spaCy.py preprocess [algo_classif] [n_test]
+	python3 spaCy.py filename preprocess [algo_classif] [n_test]
 
 	preprocess: Type of preprocessing
 		0: Complete utterance
@@ -20,7 +20,7 @@ import pickle
 import pandas as pd
 import numpy as np
 
-#from preprocessing import *
+from preprocessing import *
 from vectorization_spaCy import *
 from data_utils import *
 
@@ -29,20 +29,22 @@ from classification import *
 
 
 """ Step 0: Get arguments on command line """
+filename=sys.argv[1]
+
 preprocess = 0
 algo_classif = 0
 n_test = 1
 
-if len(sys.argv) > 1: 
-	preprocess = int(sys.argv[1])
-
 if len(sys.argv) > 2: 
-	algo_classif= int(sys.argv[2])
+	preprocess = int(sys.argv[2])
 
 if len(sys.argv) > 3: 
-	n_test= int(sys.argv[3])
+	algo_classif= int(sys.argv[3])
 
+if len(sys.argv) > 4: 
+	n_test= int(sys.argv[4])
 
+print('Filename: ', filename)
 print('Type of preprocessing: ', preprocess)
 print('Chosen algorithm for classification: ', algo_classif)
 print('Number of dyds for test: ', n_test,'\n\n')
@@ -81,7 +83,19 @@ duration=np.delete(np.array(df[6]),0).astype(np.float)
 """ Step 2: Preprocessing of data """
 print('Preprocessing of data')
 
-tokens, lemma=preprocessing(utterances, preprocess,1, 1)
+#tokens, lemma=preprocessing(utterances, preprocess,1, 1)
+
+with open(filename, "rb") as fp: 
+	tokens = pickle.load(fp)
+
+lemma=1
+"""if preprocess:
+	data_file=[]
+	for data in tokens:
+		if data !=[]:
+			data = [tokenization(d)[0] for d in data]
+		data_file.append(data)
+	tokens=data_file"""
 
 
 """ Step 3: Vectorization of sentences """
@@ -113,8 +127,8 @@ X = add_feature_time(X, duration, dyads_index)
 
 """ Step 5: Classification """
 print('Classification')
-#n_rand = 12
-#fold = np.random.choice(range(len(dyads_index)), n_rand)
+
+#fold = np.random.choice(range(len(dyads_index)), 12)
 
 folds = np.asarray(range(len(dyads_index)) ,dtype=np.int32)
 
@@ -145,8 +159,8 @@ for n_fold in range(folds.shape[0]-n_test):
 	
 		
 # plot graphe
-accuracy_hist(acc_hist)
-kappa_score_hist(kappa_score_hist)
+cross_validation_accuracy(acc_hist)
+cross_validation_kappa_score(kappa_score_hist)
 
 
 
