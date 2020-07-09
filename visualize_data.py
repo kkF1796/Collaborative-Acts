@@ -2,7 +2,11 @@
 	Collaborative Acts: 
 		Visualize data
 	
-	python3 visualize_data.py dyad [start_time] [end_time]
+	python3 visualize_data.py dyad [k] [start_time] [end_time]
+
+	k: number of most predictive words
+	start_time, end_time: time laps to study the 
+			interaction between the 2 participants
 -----------------------------------------------------------------"""
 import sys
 
@@ -13,6 +17,9 @@ from data_utils import *
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_selection import f_classif, chi2
 
 """
 NLP: class in .csv file
@@ -27,6 +34,25 @@ NLP: class in .csv file
 	8. Subcategories	
 	9. Categories
 """
+
+""" --------------------------------------------------------------------- 
+	Functions for the analysis of the most predicitve words
+------------------------------------------ -------------------------"""
+
+def most_predictive_f_class(X, y, labels, k):
+	f_class, p_val= f_classif(X, y)
+	n_values=np.array(f_class.argsort()[-k:][::-1])
+	return labels[n_values]
+
+
+def most_predictive_chi2(X, y, labels, k):
+	chi_sq, p_val = chi2(X, y)
+	n_values=np.array(chi_sq.argsort()[-k:][::-1])
+	return labels[n_values]
+
+""" ------------------------------------------ 
+	Functions to plot Graphs 
+------------------------------------------ --- """
 
 def dialog(X,y, index, start=0, end=20, type_graph='dialog'):
 	X = X[np.arange(start, end)]
@@ -108,12 +134,16 @@ def time(x, y , labels, index):
 ------------------------------------------ --- """
 
 dyad_ind = int(sys.argv[1]) # from 0 to 18
+k=100
 start_time=0
 end_time=20
 
-if len(sys.argv) == 4:
-	start_time = int(sys.argv[2])
-	end_time = int(sys.argv[3])
+if len(sys.argv) > 2:
+	k = int(sys.argv[2])
+
+if len(sys.argv) > 3:
+	start_time = int(sys.argv[3])
+	end_time = int(sys.argv[4])
 
 """ *** Extract data from file *** """
 
@@ -160,12 +190,34 @@ millsec =  sum(duration_dyad)-int(sum(duration_dyad))
 
 print('\nDyad: ',unique_dyads[dyad_ind],' Utterances: ', utterance_dyad.shape, ' Categories: ', categories_dyad.shape) 
 print('Time:', sum(duration_dyad), minut,':',sec,':',millsec)
+
+print('\nVisualization of the data:')
 histogram(categories_dyad,unique_dyads[dyad_ind])
 
 dialog(start_dyad,participants_dyad, unique_dyads[dyad_ind], start_time, end_time, 'paticipants')
 
 dialog(start_dyad,categories_dyad, unique_dyads[dyad_ind], start_time, end_time, 'dialog')
 time(duration_dyad, categories_dyad, collab_acts, unique_dyads[dyad_ind])
+
+
+""" *** Analysis of the most predictive words *** """
+
+print('\nAnalysis of the most predicitive words:')
+vectorizer =CountVectorizer()
+X = vectorizer.fit_transform(utterance_dyad)
+y=labels_dyad
+
+words = np.array(vectorizer.get_feature_names())
+print('Number of words in dictionnary:',len(words))
+X = X.toarray()
+print(X.shape)
+
+print('With f_class:')
+most_pred_1=most_predictive_f_class(X, y, words, k)
+print(most_pred_1)
+
+print('With chi2:')
+most_pred_2=most_predictive_chi2(X, y, words, k)
 
 
 	
