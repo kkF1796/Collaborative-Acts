@@ -6,9 +6,11 @@
 * Matplotlib
 
 ## Installation
-_Spacy_  
-d
-_Keras_  
-c
-_Pyspell_  
-d
+### Spacy
+    pip3 install -U spacy  
+    python -m spacy download fr_core_news_sm
+### Keras  
+    pip3 --upgrade tensorflow==1.15.0
+    pip3 --upgrade keras==2.2.4
+### Pyspell 
+    pip3 install pyspellchecker
