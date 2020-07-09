@@ -1,6 +1,11 @@
 # Travail personnel
-##Libraries
+## Libraries
 * Numpy
 * Pandas
 * Sklearn
 * Matplotlib
+
+## Installation
+̣_Spacy_
+_Keras_
+_Pyspell_
