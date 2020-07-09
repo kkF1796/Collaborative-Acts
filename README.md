@@ -6,6 +6,9 @@
 * Matplotlib
 
 ## Installation
-̣_Spacy_
-_Keras_
-_Pyspell_
+_Spacy_  
+d
+_Keras_  
+c
+_Pyspell_  
+d
