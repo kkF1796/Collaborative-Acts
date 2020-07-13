@@ -48,8 +48,8 @@ def cross_validation_scores(y_test, y_pred, target):
 	print('Confusion Matrix: \n', confusion_mtx_1)
 
 	# Classification report
-	class_report_1 = classification_report(y_test, y_pred, target_names=target)
-	#print(class_report_1)
+	class_report_1 = classification_report(y_test, y_pred)#, target_names=target)
+	print(class_report_1)
 	
 	return accuracy_1, kappa_score_1
 

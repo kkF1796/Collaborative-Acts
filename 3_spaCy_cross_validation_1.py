@@ -49,28 +49,26 @@ dyads_index=collabacts.dyads_index
 
 collab_acts=collabacts.collab_acts
 
-
 """ Step 4 (OPTIONAL) : Extra features """
 print('Extra Features')
 X=np.asarray(vect_data_set,dtype=np.float64)
 y=np.asarray(labels,dtype=np.int32)
 
 
-X = add_feature_time(X, duration, dyads_index)
-#X = add_feature_participant(X, participants, dyads_index)
+#X = add_feature_time(X, duration, dyads_index)
+#X = add_feature_participant(X,collabacts.participants, dyads_index)
 
+print(X.shape)
 
 """ Step 5: Classification """
 print('Classification')
-
-from sklearn.naive_bayes import GaussianNB
 
 folds = np.asarray(range(len(dyads_index)) ,dtype=np.int32)
 
 kappa_score_hist =[]
 acc_hist = []
 n_test=1
-for n_fold in range(folds.shape[0]-n_test):
+for n_fold in range(folds.shape[0]):#-n_test
 
 	fold_test = np.asarray(range(n_test),dtype=np.int32)+n_fold	
 	fold_train = np.setdiff1d(np.array(range(folds.shape[0])), fold_test)
@@ -80,20 +78,40 @@ for n_fold in range(folds.shape[0]-n_test):
 
 	print('\nTRAIN: ', fold_train, X_train.shape[0] ,' TEST:', fold_test,  X_test.shape[0])
 
-	#model1=MLPClassifier(hidden_layer_sizes=(240,12), activation='logistic',solver='sgd', alpha=0.001, batch_size='auto', learning_rate='constant', learning_rate_init=0.1, max_iter=1000, verbose=False) 
-	model1=SVC(degree=7,class_weight='balanced')
-	#model1= GaussianNB()
+
+
+	model1=MLPClassifier(hidden_layer_sizes=(60, 60), activation='logistic',solver='sgd', alpha=0.001, batch_size='auto', learning_rate='constant', learning_rate_init=0.1, max_iter=1000, verbose=False) 
+	#model1=SVC(degree=5,class_weight='balanced') #5 or 7
 
 	#train model 1
 	model1.fit(X_train, y_train)# class_weights= , sample_weights=
 
 	#test model 1 
 	y_pred_1 = model1.predict(X_test)
-	
+
 	accuracy_1, kappa_score_1 = cross_validation_scores(y_test, y_pred_1, collab_acts)
+	
+	txt = input("Type: ")
 
 	kappa_score_hist.append(kappa_score_1)
 	acc_hist.append(accuracy_1)
+
+	"""
+	tokens=collabacts.tokens
+	index=dyads_index[n_fold]
+	toks=tokens[index[0][0]:index[0][-1]+1]
+
+	TRUE = np.where(y_test == y_pred_1)
+	FALSE = np.where(y_test != y_pred_1)
+	print('TRUE:')
+	for j in range(len(TRUE[0])):
+		i = TRUE[0][j]
+		print(collab_acts[y_test[i]],': ',toks[i])
+
+	print('FALSE:')
+	for j in range(len(FALSE[0])):
+		i = FALSE[0][j]
+		print(collab_acts[y_test[i]],': ',toks[i])"""
 	
 		
 # plot graphe

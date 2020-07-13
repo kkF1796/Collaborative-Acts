@@ -78,8 +78,8 @@ n_dyades=14
 for iteration in range(n_iter):
 
 	#Initialize model SVM or NN
-	#model=MLPClassifier(hidden_layer_sizes=(240,12), activation='logistic',solver='sgd', alpha=0.001, batch_size='auto', learning_rate='constant', learning_rate_init=0.1, max_iter=1000, verbose=False)
-	model=SVC(degree=7,class_weight='balanced')
+	model=MLPClassifier(hidden_layer_sizes=(30), activation='logistic',solver='sgd', alpha=0.001, batch_size='auto', learning_rate='constant', learning_rate_init=0.1, max_iter=1000, verbose=False)
+	#model=SVC(degree=7,class_weight='balanced')
 
 
 	fold_train = np.random.choice(range(len(dyads_index)), n_dyades)

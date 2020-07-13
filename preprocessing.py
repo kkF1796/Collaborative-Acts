@@ -25,61 +25,35 @@ nlp = spacy.load("fr_core_news_sm")
 spell = SpellChecker(language='fr')
 
 
-def most_predictive_words(utterances, y, n):
-	vectorizer =CountVectorizer()
-	X = vectorizer.fit_transform(utterances)
-	words = np.array(vectorizer.get_feature_names())
-	X = X.toarray()
-	if n==1:
-		k = int(X.shape[1])
-	else:
-		k=n
-	f_class, p_val= f_classif(X, y)
-	n_values=np.array(f_class.argsort()[-k:][::-1])
-	return words[n_values]
 
-def spell_correction(tokens):
-	#tokens_text = utterance.split(" ")
-	tokens_text=tokens
-	misspelled = spell.unknown(tokens_text)
-	for word in misspelled:
-		if word in tokens_text:
-			index = tokens_text.index(word)
-			tokens_text[index] = spell.correction(word)
-
-	#spell_correct = " ".join(tokens_text) 
-	return tokens_text #spell_correct
-
-
-
-def preprocessing(utterances, y, ponct=0, spell=0, predict=0, stop=0, lem=0):
+def preprocessing(utterances, y, ponct=0, spell=0, grammar=0, stop=0, lem=0):
 	utterance_data_set=[]
-	if predict != 0: # 0 or value of the n most predicitve values
-		most_pred = most_predictive_words(utterances, y, predict)
+	"""if predict != 0: # 0 or value of the n most predicitve values
+		most_pred = most_predictive_words(utterances, y, predict)"""
+	print('PREPROCESS: ')
 	for utterance in utterances:
-		#print('\n',utterance)
+		print('\n\n',utterance)
 
-		tokens=normalization(utterance)
-		tokens=tokens.split(" ")
+		#tokens=normalization(utterance)
+		tokens=tokenization(utterance)
+		
+		if grammar:
+			tokens=[token for token in tokens if token.pos_ != 'DET' and token.pos_ != 'CONJ' and token.pos_ != 'SCONJ']# and token.pos_ != 'ADP']
 
-		if predict != 0:
-			tokens=[token for token in tokens if token in most_pred]
+		if stop:
+			tokens=delete_stop_words(tokens)
+		if lem:
+			tokens=lemmatization(tokens)
+		
+		if not lem:
+			tokens=[token.text for token in tokens]
+
 		if ponct:
-			tokens= [token for token in tokens if (not token in string.punctuation or token=='?' or token=='!') ]
-		if spell:
-			tokens=spell_correction(tokens)
+			tokens= [token for token in tokens if (not token in string.punctuation or token=='?' or token=='!') ] #not token.isnumeric() or
 
-		if stop or lem:
-			tokens=" ".join(tokens)
-			tokens=tokenization(tokens)
-			if stop:
-				tokens=delete_stop_words(tokens)
-				if not lem:
-					tokens=[token.text for token in tokens]
-			if lem:
-				tokens=lemmatization(tokens)
-
-		#print(tokens)
+		print(tokens)
+		#tokens=list(set(tokens))
+		#txt = input("Type: ")
 		utterance_data_set.append(tokens)
 	return utterance_data_set
 

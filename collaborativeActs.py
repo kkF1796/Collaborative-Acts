@@ -59,6 +59,8 @@ class CollabActs(object):
 	def set_index(self, index_data_set):
 		index_data_set=np.asarray(index_data_set,dtype=np.int32)
 
+		self.utterances=self.utterances[index_data_set]
+
 		self.dyads = self.dyads[index_data_set]
 		self.labels = self.labels[index_data_set]
 		self.participants = self.participants[index_data_set]
@@ -69,7 +71,7 @@ class CollabActs(object):
 		self.dyads_index=[np.where(self.dyads == dyad) for dyad in unique_dyads]
 
 
-	def vectorization(self, tfidf=0):
+	def vectorization(self, tfidf=0, most_predict=0):
 		self.tokens, index_data_set = remove_empty(self.tokens)
 		self.set_index(index_data_set)
 		vectors = []
@@ -77,9 +79,13 @@ class CollabActs(object):
 			index=self.dyads_index[i]
 			token = self.tokens[index[0][0]:index[0][-1]+1]
 			X=None
-			if tfidf:
+			y=None
+			if tfidf or most_predict:
 				X=self.utterances[index]
-			vectors = vectors + vectorization(token, tfidf, X)
+			if most_predict:
+				y=self.labels[index]
+			vectors = vectors + vectorization(token, tfidf, X, y, most_predict)
+
 
 		self.vect_data_set=vectors
 
