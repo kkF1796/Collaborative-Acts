@@ -26,6 +26,10 @@ import numpy as np
 from data_utils import *
 from model_tools import *
 
+from sklearn.model_selection import ShuffleSplit
+from sklearn.model_selection import train_test_split
+from sklearn.utils.class_weight import compute_class_weight
+
 
 """ Step 0: Get arguments on command line """
 filename=sys.argv[1]
@@ -45,7 +49,6 @@ duration=collabacts.duration
 dyads_index=collabacts.dyads_index
 
 collab_acts=collabacts.collab_acts
-
 
 
 """ Step 4 (OPTIONAL) : Extra features """
@@ -71,18 +74,33 @@ folds = np.asarray(range(len(dyads_index)) ,dtype=np.int32)
 kappa_score_hist =[]
 acc_hist = []
 n_test = 1
-for n_fold in range(folds.shape[0]):
 
-	fold_test = np.asarray(range(n_test),dtype=np.int32)+n_fold	
-	fold_train = np.setdiff1d(np.array(range(folds.shape[0])), fold_test)		
 
-	X_test, y_test = split(X,y, fold_test, dyads_index) 
-	X_train, y_train= split(X,y,fold_train, dyads_index)
+rs = ShuffleSplit(n_splits=4, test_size=0.25, random_state=42) 
+for train_index, test_index in rs.split(X):
+	#print("\n\nTRAIN:", len(train_index), "TEST:", len(test_index))
 
-	print('\nTRAIN: ', fold_train, X_train.shape[0] ,' TEST:', fold_test,  X_test.shape[0])
+#for n_fold in range(folds.shape[0]):
 
-	weights = compute_weights(class_weights, fold_train,0)
+	#fold_test = np.asarray(range(n_test),dtype=np.int32)+n_fold	
+	#fold_train = np.setdiff1d(np.array(range(folds.shape[0])), fold_test)
+	#fold_train = np.asarray([18, 5],dtype=np.int32)
+
+	#X_test, y_test = split(X,y, fold_test, dyads_index) 
+	#X_train, y_train= split(X,y,fold_train, dyads_index)
+
+	X_train = X[train_index]
+	y_train = y[train_index]
+
+	X_test = X[test_index]
+	y_test = y[test_index]
+	
+
+	#print('\nTRAIN: ', fold_train, X_train.shape[0] ,' TEST:', fold_test,  X_test.shape[0])
+
+	#weights = compute_weights(class_weights, fold_train,1)
 	#print('Weights: ',weights)
+	weights=compute_class_weight('balanced', np.unique(y), y)
 
 	" Prepare standardized data for LSTM"
 	n_steps = 1
@@ -96,20 +114,19 @@ for n_fold in range(folds.shape[0]):
 	y_test_categ = to_categorical(y_test)
 	#print('\n',y_train)
 
-	hidden_nodes = 95 #95 - 110 #64 # 74- 144 #240
-	" Build and Train LSTM "
+	hidden_nodes = 95 #64 # 74- 144 #240
+	" Build and Train LSTM " "A REVOIR POUR LOAD ou GET MODEL"
 	#with tf.device('/gpu:0'):
 	model = Sequential()
 	model.add(LSTM(hidden_nodes, return_sequences=True,input_shape=(n_steps, n_features), name='Layer1')) #return_sequences=True
 	model.add(Dropout(0.25))
 	model.add(LSTM(hidden_nodes, name='Layer2'))
 	model.add(Dropout(0.25))
-
 	model.add(Dense(8, activation='softmax', name='Dense1'))
 	#model.build() 
 	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 	#print(model.summary())
-	model.fit(X_train, y_train, epochs=100, batch_size=320, verbose=0,shuffle=True)#, class_weight=weights) #b_size: 320-482-610
+	model.fit(X_train, y_train, epochs=60, batch_size=482, verbose=0 ,shuffle=True)#, class_weight=weights)
 
 	# Final evaluation of the model
 	scores = model.evaluate(X_test, y_test_categ, verbose=0)
@@ -122,12 +139,9 @@ for n_fold in range(folds.shape[0]):
 
 	#txt = input("Type: ")
 
-	if n_fold != 8:
-		kappa_score_hist.append(kappa_score)
-		acc_hist.append(accuracy)
+	kappa_score_hist.append(kappa_score)
+	acc_hist.append(accuracy)
 
-print(acc_hist)
-print('\n',kappa_score_hist)
 # plot graphe
 cross_validation_accuracy(acc_hist)
 cross_validation_kappa_score(kappa_score_hist)

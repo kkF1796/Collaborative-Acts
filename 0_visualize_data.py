@@ -63,12 +63,12 @@ def dialog(X,y, index, start=0, end=20, type_graph='dialog'):
 		plt.axvline(x=X[i], linewidth=0.25, color='c', linestyle='-.')
 
 	if type_graph=='dialog':
-		plt.xlabel('Time (ms)')
+		plt.xlabel('Time (s)')
 		plt.ylabel('Collaborativ Acts')
 		plt.title('Types of utterances for dyad: '+index+' ( from '+ str(start)+' to '+str(end)+')')
 
 	if type_graph=='participants':
-		plt.xlabel('Time (ms)')
+		plt.xlabel('Time (s)')
 		plt.ylabel('Participant')
 		plt.title('Participation for dyad: '+index+' ( from '+ str(start)+' to '+str(end)+')')
 	plt.show()

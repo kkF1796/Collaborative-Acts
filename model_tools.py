@@ -61,9 +61,9 @@ def cross_validation_accuracy(acc_hist):
 	print('Max Accuracy: ', max(acc_hist))
 
 	plt.plot(acc_hist,'m*', label='obtained accuracy')
-	plt.axhline(y=0.3,linewidth=0.75, color='r', linestyle='-', label='accuracy==0.3')
+	"""plt.axhline(y=0.3,linewidth=0.75, color='r', linestyle='-', label='accuracy==0.3')
 	plt.axhline(y=0.4,linewidth=0.75, color='y', linestyle='-', label='accuracy==0.4')
-	plt.axhline(y=0.5,linewidth=0.75, color='g', linestyle='-', label='accuracy==0.5')
+	plt.axhline(y=0.5,linewidth=0.75, color='g', linestyle='-', label='accuracy==0.5')"""
 	for i in range(len(acc_hist)): 
 		plt.axvline(x=i,linewidth=0.5, color='c', linestyle='-.')
 
@@ -80,9 +80,9 @@ def cross_validation_kappa_score(kappa_score_hist):
 	print('Max Kappa Score: ', max(kappa_score_hist))
 
 	plt.plot(kappa_score_hist,'m*', label='obtained kappa score')
-	plt.axhline(y=0.2,linewidth=0.75, color='r', linestyle='-', label='kappa==0.2')
+	"""plt.axhline(y=0.2,linewidth=0.75, color='r', linestyle='-', label='kappa==0.2')
 	plt.axhline(y=0.25,linewidth=0.75, color='y', linestyle='-', label='kappa==0.25')
-	plt.axhline(y=0.3,linewidth=0.75, color='g', linestyle='-', label='kappa==0.3')
+	plt.axhline(y=0.3,linewidth=0.75, color='g', linestyle='-', label='kappa==0.3')"""
 	for i in range(len(kappa_score_hist)): 
 		plt.axvline(x=i,linewidth=0.5, color='c', linestyle='-.')
 

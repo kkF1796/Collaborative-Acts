@@ -33,6 +33,27 @@ def add_feature_time(X, time, index):
 	for ind in index:
 		y[ind] = time[ind] *100 / sum(time[ind]) # time percentage (%)
 	return np.insert(X,  X[0].shape[0] ,y, axis=1)
+
+
+# Function that add passed time (percentage) until the given utterance (time_until_utterance / total_time)
+def add_feature_time_in_dialog(X, time, index):
+	y = np.zeros(X.shape[0])
+	for ind in index:
+		time_ind=time[ind]
+		time_up = np.zeros(time_ind.shape[0])
+		for i in range(time_ind.shape[0]):
+			time_up[i]=sum(time_ind[0:i]) *100 / sum(time[ind]) 
+		
+		y[ind] = time_up *100 / sum(time[ind]) # time percentage (%)
+	return np.insert(X,  X[0].shape[0] ,y, axis=1)
+
+
+def add_feature_n_in_dialog(X, index):
+	y = np.zeros(X.shape[0])
+	for ind in index:
+		y[ind] = np.array(range(X[ind].shape[0])) *100 / X[ind].shape[0] # time percentage (%)
+	return np.insert(X,  X[0].shape[0] ,y, axis=1)
+
 	
 
 # Function that add the type of the previous utterance as a feature

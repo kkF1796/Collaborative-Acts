@@ -26,6 +26,22 @@ import numpy as np
 from data_utils import *
 from model_tools import *
 
+def split_sequences(sequences, n_steps):
+	X, y = list(), list()
+	for i in range(len(sequences)):
+		# find the end of this pattern
+		end_ix = i + n_steps
+		# check if we are beyond the dataset
+		if end_ix > len(sequences):
+			break
+		# gather input and output parts of the pattern
+		seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1, -1]
+		#seq_x, seq_y = sequences[i:end_ix, :-1], sequences[i:end_ix, -1]
+		X.append(seq_x)
+		y.append(seq_y)
+	return np.array(X), np.array(y)
+
+
 
 """ Step 0: Get arguments on command line """
 filename=sys.argv[1]
@@ -67,30 +83,34 @@ class_weights = class_weights(y, dyads_index)
 
 folds = np.asarray(range(len(dyads_index)) ,dtype=np.int32)
 
-
 kappa_score_hist =[]
 acc_hist = []
 n_test = 1
 for n_fold in range(folds.shape[0]):
 
 	fold_test = np.asarray(range(n_test),dtype=np.int32)+n_fold	
-	fold_train = np.setdiff1d(np.array(range(folds.shape[0])), fold_test)		
+	fold_train = np.setdiff1d(np.array(range(folds.shape[0])), fold_test)
 
-	X_test, y_test = split(X,y, fold_test, dyads_index) 
+	X_test, y_test = split(X,y, fold_test, dyads_index)
+	Z_test = np.insert(X_test,  X_test[0].shape[0] ,y_test, axis=1) 
+
 	X_train, y_train= split(X,y,fold_train, dyads_index)
+	Z_train = np.insert(X_train,  X_train[0].shape[0] ,y_train, axis=1) 
+	print(Z_train.shape)
 
-	print('\nTRAIN: ', fold_train, X_train.shape[0] ,' TEST:', fold_test,  X_test.shape[0])
+	#print('\nTRAIN: ', fold_train, X_train.shape[0] ,' TEST:', fold_test,  X_test.shape[0])
 
 	weights = compute_weights(class_weights, fold_train,0)
 	#print('Weights: ',weights)
 
-	" Prepare standardized data for LSTM"
-	n_steps = 1
-	n_features = X_train.shape[1]
-	X_train = np.reshape(X_train, (X_train.shape[0], n_steps, X_train.shape[1]))
-	X_test = np.reshape(X_test, (X_test.shape[0], n_steps, X_test.shape[1]))	
-	print(X_train.shape, X_test.shape)
-	#print(X_train.shape[2])
+	n_features = X.shape[1]
+	n_steps = 2
+	# convert into input/output
+	X_train, y_train = split_sequences(Z_train, n_steps)
+	X_test, y_test = split_sequences(Z_test, n_steps)
+	#print(X_train[0], y_train[0])
+	print(X_train.shape, y_train.shape)
+	print(X_test.shape, y_test.shape)
 
 	y_train = to_categorical(y_train)
 	y_test_categ = to_categorical(y_test)
@@ -100,16 +120,16 @@ for n_fold in range(folds.shape[0]):
 	" Build and Train LSTM "
 	#with tf.device('/gpu:0'):
 	model = Sequential()
-	model.add(LSTM(hidden_nodes, return_sequences=True,input_shape=(n_steps, n_features), name='Layer1')) #return_sequences=True
-	model.add(Dropout(0.25))
+	model.add(LSTM(hidden_nodes,return_sequences=True, input_shape=(n_steps, n_features), name='Layer1')) #return_sequences=True
+	model.add(Dropout(0.2))
 	model.add(LSTM(hidden_nodes, name='Layer2'))
-	model.add(Dropout(0.25))
+	model.add(Dropout(0.2))
 
 	model.add(Dense(8, activation='softmax', name='Dense1'))
 	#model.build() 
 	model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 	#print(model.summary())
-	model.fit(X_train, y_train, epochs=100, batch_size=320, verbose=0,shuffle=True)#, class_weight=weights) #b_size: 320-482-610
+	model.fit(X_train, y_train, epochs=60, batch_size=320, verbose=0 ,shuffle=True)#, class_weight=weights) #482
 
 	# Final evaluation of the model
 	scores = model.evaluate(X_test, y_test_categ, verbose=0)
@@ -118,13 +138,14 @@ for n_fold in range(folds.shape[0]):
 	" Compute scores "
 	y_pred = model.predict_classes(X_test)
 
+	#print(y_pred)
+
 	accuracy, kappa_score = cross_validation_scores(y_test, y_pred, collab_acts)
 
 	#txt = input("Type: ")
 
-	if n_fold != 8:
-		kappa_score_hist.append(kappa_score)
-		acc_hist.append(accuracy)
+	kappa_score_hist.append(kappa_score)
+	acc_hist.append(accuracy)
 
 print(acc_hist)
 print('\n',kappa_score_hist)

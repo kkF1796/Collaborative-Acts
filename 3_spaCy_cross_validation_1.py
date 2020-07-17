@@ -55,7 +55,7 @@ X=np.asarray(vect_data_set,dtype=np.float64)
 y=np.asarray(labels,dtype=np.int32)
 
 
-#X = add_feature_time(X, duration, dyads_index)
+X = add_feature_time(X, duration, dyads_index)
 #X = add_feature_participant(X,collabacts.participants, dyads_index)
 
 print(X.shape)
@@ -78,10 +78,9 @@ for n_fold in range(folds.shape[0]):#-n_test
 
 	print('\nTRAIN: ', fold_train, X_train.shape[0] ,' TEST:', fold_test,  X_test.shape[0])
 
-
-
-	model1=MLPClassifier(hidden_layer_sizes=(60, 60), activation='logistic',solver='sgd', alpha=0.001, batch_size='auto', learning_rate='constant', learning_rate_init=0.1, max_iter=1000, verbose=False) 
-	#model1=SVC(degree=5,class_weight='balanced') #5 or 7
+	
+	#model1=MLPClassifier(hidden_layer_sizes=(60, 60), activation='logistic',solver='sgd', alpha=0.001, batch_size='auto', learning_rate='constant', learning_rate_init=0.1, max_iter=1000, verbose=False) 
+	model1=SVC(degree=5,class_weight='balanced') #5 or 7
 
 	#train model 1
 	model1.fit(X_train, y_train)# class_weights= , sample_weights=
@@ -91,7 +90,7 @@ for n_fold in range(folds.shape[0]):#-n_test
 
 	accuracy_1, kappa_score_1 = cross_validation_scores(y_test, y_pred_1, collab_acts)
 	
-	txt = input("Type: ")
+	#txt = input("Type: ")
 
 	kappa_score_hist.append(kappa_score_1)
 	acc_hist.append(accuracy_1)
@@ -113,7 +112,8 @@ for n_fold in range(folds.shape[0]):#-n_test
 		i = FALSE[0][j]
 		print(collab_acts[y_test[i]],': ',toks[i])"""
 	
-		
+print(acc_hist)	
+print('\n',kappa_score_hist)	
 # plot graphe
 cross_validation_accuracy(acc_hist)
 cross_validation_kappa_score(kappa_score_hist)
