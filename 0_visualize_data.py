@@ -54,23 +54,30 @@ def most_predictive_chi2(X, y, labels, k):
 	Functions to plot Graphs 
 ------------------------------------------ --- """
 
-def dialog(X,y, index, start=0, end=20, type_graph='dialog'):
+def dialog(X,y,z, index, start=0, end=20):
 	X = X[np.arange(start, end)]
-	y = y[np.arange(start, end)]	
+	y = y[np.arange(start, end)]
+	z = z[np.arange(start, end)]
+
+	P1 = np.where(z=='P01')
+	X1 = X[P1]
+	y1 = y[P1]
+
+	P2 = np.where(z=='P02')
+	X2 = X[P2]
+	y2 = y[P2]	
 	
-	plt.plot(X,y,'m*')
+	plt.plot(X1,y1,'m*', label='P01') 
+	plt.plot(X2,y2,'y*', label='P02')
 	for i in range(X.shape[0]): 
 		plt.axvline(x=X[i], linewidth=0.25, color='c', linestyle='-.')
 
-	if type_graph=='dialog':
-		plt.xlabel('Time (s)')
-		plt.ylabel('Collaborativ Acts')
-		plt.title('Types of utterances for dyad: '+index+' ( from '+ str(start)+' to '+str(end)+')')
+	plt.legend(loc='upper left')
 
-	if type_graph=='participants':
-		plt.xlabel('Time (s)')
-		plt.ylabel('Participant')
-		plt.title('Participation for dyad: '+index+' ( from '+ str(start)+' to '+str(end)+')')
+	plt.xlabel('Time (s)')
+	plt.ylabel('Collaborativ Acts')
+	plt.title('Types of utterances for dyad: '+index+' ( from '+ str(start)+' to '+str(end)+') according to the participant')
+
 	plt.show()
 	#plt.savefig()
 
@@ -109,9 +116,15 @@ def time(x, y , labels, index):
 			max_time[label]=max(time)* 100/ sum(x)
 
 
-	plt.plot(labels,mean_time,'m*', labels,min_time,'y*', labels,max_time,'g*')
+	plt.plot(labels,mean_time,'m*', label='Mean time')
+	plt.plot(labels,min_time,'y*', label='Min time') 
+	plt.plot(labels,max_time,'g*', label='Max time')
+
 	for i in range(labels.shape[0]): 
 		plt.axvline(x=labels[i],linewidth=0.5, color='c', linestyle='-.')
+
+	plt.legend(loc='upper left')
+
 	plt.xlabel('Collaborative Acts')
 	plt.ylabel('Mean time of utterances (%)')
 	plt.title('Mean time of utterances according to their category for dyad: '+index)
@@ -194,9 +207,11 @@ print('Time:', sum(duration_dyad), minut,':',sec,':',millsec)
 print('\nVisualization of the data:')
 histogram(categories_dyad,unique_dyads[dyad_ind])
 
-dialog(start_dyad,participants_dyad, unique_dyads[dyad_ind], start_time, end_time, 'paticipants')
+#dialog1(start_dyad,participants_dyad, unique_dyads[dyad_ind], start_time, end_time, 'participants')
+#dialog1(start_dyad,categories_dyad, unique_dyads[dyad_ind], start_time, end_time, 'dialog')
 
-dialog(start_dyad,categories_dyad, unique_dyads[dyad_ind], start_time, end_time, 'dialog')
+dialog(start_dyad,categories_dyad,participants_dyad, unique_dyads[dyad_ind],  start_time, end_time)
+
 time(duration_dyad, categories_dyad, collab_acts, unique_dyads[dyad_ind])
 
 
