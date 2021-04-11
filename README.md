@@ -1,11 +1,13 @@
 # Travail personnel
-## Libraries
+"Collaborative Acts": classification de paroles en actes collaboratif
+
+#### Libraries
 * Numpy
 * Pandas
 * Sklearn
 * Matplotlib
 
-## Installation
+#### Installation
 ### Spacy
     pip3 install -U spacy  
     python -m spacy download fr_core_news_sm
