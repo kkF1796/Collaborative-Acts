@@ -1,5 +1,5 @@
 # Travail personnel
-"Collaborative Acts": classification de paroles en actes collaboratif
+"Collaborative Acts": classification de paroles en actes collaboratifs
 
 #### Libraries
 * Numpy
